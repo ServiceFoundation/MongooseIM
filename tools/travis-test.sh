@@ -226,6 +226,13 @@ build_pkg () {
       echo "No dockerfile for given platform" && exit 1
   fi
   cd tools/pkg
+    echo $platform 
+    echo  "1"
+    echo $esl_erlang_pkg_vsn
+    echo $min_erl_vsn
+    echo "$project_root/tools/pkg/$dockerfile_name"
+    echo $project_root
+    echo "$project_root/tools/pkg/packages"
   ./build.sh \
     --platform $platform \
     --revision "1" \

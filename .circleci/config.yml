@@ -311,36 +311,3 @@ workflows:
           context: mongooseim-org
           filters: *all_tags
       # ============= BASE BUILDS =============
-      - mim/build:
-          name: otp_21_3
-          otp_package: 21.3.8.6-1
-          context: mongooseim-org
-          filters: *all_tags
-      - mim/build:
-          name: otp_22
-          otp_package: 22.1.8-1
-          build_prod: true
-          context: mongooseim-org
-          filters: *all_tags
-      # ============= SMALL TESTS =============
-      - mim/small_tests:
-          name: small_tests_21_3
-          otp_package: 21.3.8.6-1
-          context: mongooseim-org
-          requires:
-            - otp_21_3
-          filters: *all_tags
-      - mim/small_tests:
-          name: small_tests_22
-          otp_package: 22.1.8-1
-          context: mongooseim-org
-          requires:
-            - otp_22
-          filters: *all_tags
-      # ============= DIALYZER =============
-      - mim/dialyzer:
-          name: dialyzer
-          otp_package: 22.1.8-1
-          context: mongooseim-org
-          filters: *all_tags
-      # ============= MOST RECENT VERSION TESTS =============
