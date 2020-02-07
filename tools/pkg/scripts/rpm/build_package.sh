@@ -8,7 +8,6 @@ specfile_min_erl_vsn=$3
 arch="x86_64"
 package_name_arch="amd64"
 
-cd ~/rpmbuild/BUILD/mongooseim
 
 rpmbuild -bb \
     --define "version ${version}" \

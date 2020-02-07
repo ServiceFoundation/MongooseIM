@@ -42,7 +42,7 @@ dpkg --build mongooseim ./
 
 source /etc/os-release
 os=$ID
-os_version=$VERSION_ID
+os_version=$VERSION_CODENAME
 package_os_file_name=${os}~${os_version}
 mv mongooseim_*.deb ~/mongooseim_${version}-${revision}~${package_os_file_name}_${arch}.deb
 

@@ -20,6 +20,7 @@ usage() {
     echo "Usage: $0
 	  --platform <platform>
 	  --revision <revision>
+	  --version <version>
 	  --erlang_version <erlang_version>
 	  --minimal_erlang_version <minimal_erlang_version>
 	  --dockerfile_path <dockerfile_path>
@@ -28,7 +29,7 @@ usage() {
 }
 
 # Require valid number of parameters
-if [ $len -ne 14 ]; then
+if [ $len -ne 16 ]; then
     usage && exit 1
 fi
 
@@ -39,6 +40,10 @@ for (( i = 0; i < $len - 1; i++ )); do
         --platform)
             is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
             platform="$next_arg"
+            ;;
+        --version)
+            is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
+            version="${next_arg}"
             ;;
         --revision)
             is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
@@ -72,13 +77,10 @@ for (( i = 0; i < $len - 1; i++ )); do
     i=$((i+1))
 done
 
-version=$(cat "$(git rev-parse --show-toplevel)/VERSION")
-revision="${revision}.$(git rev-parse --short HEAD)"
-
 dockerfile_platform=${platform/_/:}
 docker build -t mongooseim-${platform}:${version}-${revision} \
-    --build-arg version=${version} \
     --build-arg dockerfile_platform=${dockerfile_platform} \
+    --build-arg version=${version} \
     --build-arg revision=${revision} \
     --build-arg erlang_version=${erlang_version} \
     --build-arg min_erl_vsn=${minimal_erlang_version} \

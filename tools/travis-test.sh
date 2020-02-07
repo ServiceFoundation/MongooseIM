@@ -12,8 +12,6 @@ PRESET="${PRESET-$DEFAULT_PRESET}"
 SMALL_TESTS="${SMALL_TESTS:-true}"
 COVER_ENABLED="${COVER_ENABLED:-true}"
 
-GIT_REF=$(git rev-parse --short HEAD)
-
 while getopts ":p::s::e::c:" opt; do
   case $opt in
     p)
@@ -214,10 +212,13 @@ enable_tls_dist () {
 
 build_pkg () {
   set -e
+  cd tools/pkg
+
   local platform=$1
   local esl_erlang_pkg_vsn=$2
   local project_root=$(git rev-parse --show-toplevel)
   local min_erl_vsn=$(grep "require_min_otp_vsn" "${project_root}/rebar.config" | tr -d -c 0-9)
+
   if [[ $platform == centos* ]]; then
       local dockerfile_name="Dockerfile_rpm"
   elif [[ $platform == debian* ]] || [[ $platform == ubuntu* ]]; then
@@ -225,22 +226,25 @@ build_pkg () {
   else
       echo "No dockerfile for given platform" && exit 1
   fi
-  cd tools/pkg
-    echo $platform 
-    echo  "1"
-    echo $esl_erlang_pkg_vsn
-    echo $min_erl_vsn
-    echo "$project_root/tools/pkg/$dockerfile_name"
-    echo $project_root
-    echo "$project_root/tools/pkg/packages"
+
+  version=$(cat "${project_root}/VERSION")
+  commit_sha=$(git rev-parse --short HEAD)
+  # Do not add commit hash to package revision if package is built for tag
+  if [[ "$(git describe --exact-match --tags HEAD)" == "$version" ]]; then
+      revision="1"
+  else
+      revision="1.${commit_sha}"
+  fi
+
   ./build.sh \
     --platform $platform \
-    --revision "1" \
+    --version $version \
+    --revision $revision \
     --erlang_version $esl_erlang_pkg_vsn \
     --minimal_erlang_version $min_erl_vsn \
     --dockerfile_path "$project_root/tools/pkg/$dockerfile_name" \
     --context_path $project_root \
-    --built_packages_directory "$project_root/tools/pkg/packages" \
+    --built_packages_directory "$project_root/tools/pkg/packages"
   set +e
 }
 

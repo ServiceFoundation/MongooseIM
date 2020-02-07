@@ -5,14 +5,14 @@ FROM $dockerfile_platform AS builder
 
 # Install build deps
 RUN apt-get update
-RUN apt-get install -y git \
-                       make \
+RUN apt-get install -y make \
                        g++ \
                        libssl-dev \
                        libexpat-dev \
                        zlib1g-dev \
                        locales \
-                       unixodbc-dev
+                       unixodbc-dev \
+                       git
 
 RUN apt-get -y update && apt-get -y install curl gnupg && \
         curl -O http://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb && \
@@ -24,19 +24,18 @@ RUN apt-get install -y esl-erlang=1:$erlang_version
 # Fix locales
 RUN locale-gen en_US.UTF-8
 
-# Copy source code and put building files in proper directories according to
+# Copy source code and put building files
 WORKDIR /root/
 COPY . ./mongooseim
+RUN rm -rf ./mongooseim/_build
+
 RUN cp -r ./mongooseim/tools/pkg/scripts/deb .
 
-ARG git_ref
+ARG version
 ARG revision
 ARG min_erl_vsn
 
-RUN ./deb/build_package.sh \
-        $version \
-	$revision \
-        $min_erl_vsn
+RUN ./deb/build_package.sh $version $revision $min_erl_vsn
 
 # Create image for sharing and validation of built package
 FROM $dockerfile_platform

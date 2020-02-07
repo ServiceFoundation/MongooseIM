@@ -6,19 +6,18 @@ FROM $dockerfile_platform AS builder
 # Install the build dependencies
 RUN yum install -y epel-release
 RUN yum --setopt=obsoletes=0 install -y \
-    wget \
     lsof \
     gcc \
     rpm-build \
     make automake \
-    git \
     gcc-c++ \
     kernel-devel \
     openssl \
     openssl-devel \
     yum-utils \
     unixODBC-devel \
-    rpmdevtools
+    rpmdevtools \
+    git
 
 # Fix locale setup
 # See https://github.com/CentOS/sig-cloud-instance-images/issues/71#issuecomment-266957519
@@ -35,6 +34,7 @@ RUN curl -O https://packages.erlang-solutions.com/erlang-solutions-2.0-1.noarch.
 RUN rpmdev-setuptree
 WORKDIR /root/rpmbuild
 COPY . ./BUILD/mongooseim
+RUN rm -rf ./BUILD/mongooseim/_build
 RUN cd ./BUILD/mongooseim && git clean -ffxd
 RUN cp ./BUILD/mongooseim/tools/pkg/scripts/rpm/mongooseim.spec ./SPECS/.
 RUN cp ./BUILD/mongooseim/tools/pkg/scripts/rpm/mongooseim.service \
@@ -44,10 +44,8 @@ ARG version
 ARG revision
 ARG min_erl_vsn
 
-RUN ./BUILD/mongooseim/tools/pkg/scripts/rpm/build_package.sh \
-        $version \
-	$revision \
-        $min_erl_vsn
+RUN ./BUILD/mongooseim/tools/pkg/scripts/rpm/build_package.sh $version $revision \
+    $min_erl_vsn
 
 # Create image for sharing and validation of built package
 FROM $dockerfile_platform
