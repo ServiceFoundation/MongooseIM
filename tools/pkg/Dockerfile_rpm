@@ -1,8 +1,7 @@
 # vi: ft=dockerfile
-ARG os
-ARG os_version
+ARG dockerfile_platform
 
-FROM $os:$os_version AS builder
+FROM $dockerfile_platform AS builder
 
 # Install the build dependencies
 RUN yum install -y epel-release
@@ -41,17 +40,17 @@ RUN cp ./BUILD/mongooseim/tools/pkg/scripts/rpm/mongooseim.spec ./SPECS/.
 RUN cp ./BUILD/mongooseim/tools/pkg/scripts/rpm/mongooseim.service \
        ./SOURCES/mongooseim.service
 
-ARG git_ref
+ARG version
 ARG revision
 ARG min_erl_vsn
 
 RUN ./BUILD/mongooseim/tools/pkg/scripts/rpm/build_package.sh \
-        $git_ref \
+        $version \
 	$revision \
         $min_erl_vsn
 
 # Create image for sharing and validation of built package
-FROM $os:$os_version
+FROM $dockerfile_platform
 
 # Copy built package from previous image and install it with required dependencies
 RUN yum install -y epel-release sudo nc && yum -y clean all

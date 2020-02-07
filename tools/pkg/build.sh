@@ -18,9 +18,7 @@ flag_error() {
 
 usage() {
     echo "Usage: $0
-          --os <os>
-	  --os_version <os_version>
-	  --git_ref <git_ref>
+	  --platform <platform>
 	  --revision <revision>
 	  --erlang_version <erlang_version>
 	  --minimal_erlang_version <minimal_erlang_version>
@@ -30,7 +28,7 @@ usage() {
 }
 
 # Require valid number of parameters
-if [ $len -ne 18 ]; then
+if [ $len -ne 14 ]; then
     usage && exit 1
 fi
 
@@ -38,17 +36,9 @@ for (( i = 0; i < $len - 1; i++ )); do
     arg=${args[i]}
     next_arg=${args[i+1]}
     case "$arg" in
-        --os)
+        --platform)
             is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
-            os="$next_arg"
-            ;;
-        --os_version)
-            is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
-            os_version="${next_arg}"
-            ;;
-        --git_ref)
-            is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
-            git_ref="${next_arg}"
+            platform="$next_arg"
             ;;
         --revision)
             is_flag_or_empty "$next_arg" && param_error "$arg" && exit 1
@@ -82,10 +72,13 @@ for (( i = 0; i < $len - 1; i++ )); do
     i=$((i+1))
 done
 
-docker build -t mongooseim-${os}-${os_version}:${git_ref}-${revision} \
-    --build-arg os=${os} \
-    --build-arg os_version=${os_version} \
-    --build-arg git_ref=${git_ref} \
+version=$(cat "$(git rev-parse --show-toplevel)/VERSION")
+revision="${revision}.$(git rev-parse --short HEAD)"
+
+dockerfile_platform=${platform/_/:}
+docker build -t mongooseim-${platform}:${version}-${revision} \
+    --build-arg version=${version} \
+    --build-arg dockerfile_platform=${dockerfile_platform} \
     --build-arg revision=${revision} \
     --build-arg erlang_version=${erlang_version} \
     --build-arg min_erl_vsn=${minimal_erlang_version} \
@@ -95,5 +88,5 @@ docker build -t mongooseim-${os}-${os_version}:${git_ref}-${revision} \
 # Run ready docker image with tested mongooseim package and move it to
 # built packages directory
 docker run --rm -v "${built_packages_directory}:/built_packages" \
-    "mongooseim-${os}-${os_version}:${git_ref}-${revision}"
+    "mongooseim-${platform}:${version}-${revision}"
     

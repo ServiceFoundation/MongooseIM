@@ -1,8 +1,7 @@
 # vi: ft=dockerfile
-ARG os
-ARG os_version
+ARG dockerfile_platform
 
-FROM $os:$os_version AS builder
+FROM $dockerfile_platform AS builder
 
 # Install build deps
 RUN apt-get update
@@ -35,12 +34,12 @@ ARG revision
 ARG min_erl_vsn
 
 RUN ./deb/build_package.sh \
-        $git_ref \
+        $version \
 	$revision \
         $min_erl_vsn
 
 # Create image for sharing and validation of built package
-FROM $os:$os_version
+FROM $dockerfile_platform
 
 # Copy built package from previous image and install it with required dependencies
 RUN apt-get update && apt-get -y install openssl netcat && apt-get -y clean
